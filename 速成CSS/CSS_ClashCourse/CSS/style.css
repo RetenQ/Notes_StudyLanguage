@@ -1,0 +1,184 @@
+
+body{
+    background-color: #f4f4f4;
+    color: #555555;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: normal;
+    line-height: 2em;
+
+    /* 也可以把它们合成一行 */
+    /* font:normal,16px,Arial,Helvetica,sans-serif; */
+    font:bold,20px,Arial,Helvetica,sans-serif;
+    /* 另外运行是从上往下运行的，所以是以后面的代码为准 */
+}
+
+button{
+    background-color:rgb(158, 211, 211);
+    color:black;
+    padding: 10px 15px;
+}
+/* 下面给按钮整点骚活 */
+
+button:hover{
+    /* 当鼠标放上去的时候 */
+    background-color: #555555;
+}
+
+button:active{
+    /* 按下的时候 */
+    background-color: beige;
+}
+
+
+/* 设置了bxo1的背景以及文字颜色 */
+.box1{
+    background-color: aquamarine;
+    color:blue;
+
+    border: 5px red solid;
+    border-left: 8px greenyellow solid;
+    border-bottom: 1px firebrick double;
+
+    padding-top: 10px;
+    padding-left: 10px;
+
+    margin-top: 20px;
+
+}
+
+.box1 h1{
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: 800;
+    font-style: italic;
+
+}
+
+.box2{
+    border: 5px dotted #cccccc;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 20px 0px;
+}
+
+.box2 h1{
+    text-align: center;
+}
+
+/* 设置container */
+.container{
+    width: 80%;
+    margin: auto;
+}
+
+.list li{
+    background-color: #a77575;
+    list-style-image: url(./image/tx1.jpg);
+    /* 在这里最好先调整好图片的大小和长宽，我这里懒就不调了 */
+    /* 另外，一个dot就代表返回该文件的上一个文件夹 */
+
+    /* 也可以使用一些默认的style，如下 */
+    list-style: none;
+}
+
+a{
+    text-decoration: none;
+    color: black;
+}
+
+/* 和按钮一样，我们也可以通过放置，激活等的改变，提示用户 */
+a:hover{
+    color: blue;
+}
+
+a:visited{
+    /* 如果你之前访问过这个url，则显示 */
+    color:rebeccapurple;
+}
+
+.clearfix{
+    clear: both;
+}
+
+.block{
+    float: left;
+    width: 33.3%;
+    border: 1px solid #cccccc;
+    box-sizing: border-box;
+    /* box-sizing: border-box; 意思是这是一个有边框的box,这样border也会被计算在内 */
+}
+
+#main-block{
+    float: left;
+    width: 70%;
+    border: 1px solid #cccccc;
+    box-sizing: border-box;
+}
+
+#sidebar{
+    float: right;
+    width: 30%;
+    border: 1px solid #cccccc;
+    box-sizing: border-box;
+}
+
+.list2 li:nth-child(even){
+    background-color: gray;
+    /* 对于li子物体的，偶数下标的，运用 */
+}
+
+.list2 li:first-child{
+    background-color: red;
+    /* 同理，也可以更改特定的下标，比如第一个 */
+}
+
+.list2 li:nth-child(3){
+    background-color: blue;
+    /* 或者第三个，另外，下标也是从0开始算的 */
+}
+
+/* 下面是更改定位模式的内容 */
+.box2{
+    border: 5px dotted #cccccc;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 20px 0px;
+    /* 下面就是把模式更改为relative的代码 */
+/*  position: relative;
+    top: 130px;
+    left: 30px; */
+}
+
+.position-box{
+    width: 500px;
+    height: 500px;
+    border: 1px solid black;
+    position: relative;
+}
+
+.position-box h1{
+    position: absolute;
+    top: 50px;
+}
+
+.position-box h2{
+    position: absolute;
+    right: 30px;
+}
+
+/* 固定位置的一个按钮 */
+#fix{
+    position: fixed;
+    right: 0;
+    bottom: 0;
+}
+
+
+p{
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-right: 10px;
+    margin-left: 10px;
+    /* 可以简写为“上 右 下 左”，“长 宽” ，“边长”，“上 左右 下” */
+    /* 比如 margin:5px ;*/
+}
