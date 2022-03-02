@@ -1,0 +1,32 @@
+# Project: 项目1
+# Makefile created by Dev-C++ 6.7-beta3
+
+CPP      = g++.exe -D__DEBUG__
+CC       = gcc.exe -D__DEBUG__
+WINDRES  = windres.exe
+OBJ      = theMax.o test01.o
+LINKOBJ  = theMax.o test01.o
+LIBS     = -L"E:/DevC++/Dev-Cpp/MinGW32/lib" -L"E:/DevC++/Dev-Cpp/MinGW32/i686-w64-mingw32/lib" -g3 -static
+INCS     = -I"E:/DevC++/Dev-Cpp/MinGW32/include" -I"E:/DevC++/Dev-Cpp/MinGW32/i686-w64-mingw32/include" -I"E:/DevC++/Dev-Cpp/MinGW32/lib/gcc/i686-w64-mingw32/10.2.0/include" -I"E:/DevC++/Dev-Cpp/MinGW32/lib/gcc/i686-w64-mingw32/10.2.0/include-fixed"
+CXXINCS  = -I"E:/DevC++/Dev-Cpp/MinGW32/include" -I"E:/DevC++/Dev-Cpp/MinGW32/i686-w64-mingw32/include" -I"E:/DevC++/Dev-Cpp/MinGW32/lib/gcc/i686-w64-mingw32/10.2.0/include" -I"E:/DevC++/Dev-Cpp/MinGW32/lib/gcc/i686-w64-mingw32/10.2.0/include-fixed" -I"E:/DevC++/Dev-Cpp/MinGW32/include/c++/10.2.0" -I"E:/DevC++/Dev-Cpp/MinGW32/include/c++/10.2.0/i686-w64-mingw32" -I"E:/DevC++/Dev-Cpp/MinGW32/include/c++/10.2.0/backward"
+BIN      = 项目1.exe
+CXXFLAGS = $(CXXINCS) -Wall -Wextra -g3
+ENCODINGS = -finput-charset=utf-8 -fexec-charset=gbk
+CFLAGS   = $(INCS) -Wall -Wextra -g3
+RM       = rm.exe -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CC) $(LINKOBJ) -o "$(BIN)" $(LIBS)
+
+theMax.o: theMax.c
+	$(CC) -c "theMax.c" -o "theMax.o" $(CFLAGS) 
+
+test01.o: test01.c theMax.h
+	$(CC) -c "test01.c" -o "test01.o" $(CFLAGS) 
