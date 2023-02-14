@@ -1,7 +1,18 @@
-def foo(s):
-    n = int(s)
-    assert n != 0, 'n is zero!'
-    return 10 / n
+import json
 
-def main():
-    foo('0')
+class Student(object):
+    def __init__(self, name, age, score):
+        self.name = name
+        self.age = age
+        self.score = score
+
+s = Student('Bob', 20, 88)  
+
+def student2dict(std):
+    return {
+        'name': std.name,
+        'age': std.age,
+        'score': std.score
+    }
+
+print(json.dumps(s, default=student2dict))
