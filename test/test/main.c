@@ -1,85 +1,140 @@
 # include <stdio.h>
 # include <stdlib.h>
 
-#define FALSE -1 ;
+#define FALSE 0;
 #define TRUE 1   ;
 #define ERROR -1 ;
 
 typedef int ElementType ;
 typedef int bool ;
 
-typedef struct SNode * PtrToSNode ;
-struct SNode
+typedef struct Node * PtrToNode ;
+struct Node
 {
     ElementType Data ;
-    PtrToSNode Next ;
+    PtrToNode Next ;
 };
 
-typedef PtrToSNode Stack ;
+typedef PtrToNode Position ;
 
-// 生成
-Stack InitStack(){
-    Stack S ;
-    S = (Stack)malloc(sizeof(struct SNode)) ;
-    S -> Next = NULL ;  // 头结点指向空代表链表此时为空
+typedef struct QNode * PtrToQNode ;
 
-    return S ;
+struct QNode
+{
+    Position Front , Rear ; //分别指向头和尾的指针
+    int Size ; //维护一个最大值
+};
+
+typedef PtrToQNode Queue;
+
+// 创建队列与基本操作
+Queue CreateQueue(){
+    Queue Q ;
+    Q = (PtrToQNode)malloc(sizeof(PtrToQNode));
+
+    // 创建头结点
+    Position _head ;
+    _head = (Position)malloc(sizeof(struct Node));
+    _head->Data = 0 ;
+    _head->Next = NULL ;
+
+    // 将头尾的指针都指向头结点
+    Q->Front = Q->Rear = _head ; //先把头尾都定义为空的头结点
+
+    Q->Size = 0 ;
+
+    return Q ;
 }
 
-// 判断是否为空（链式栈没有满的情况
-bool isEmpty(Stack S){
-    return S->Next == NULL ;
+bool isEmpty(Queue Q){
+    return (Q->Front == Q->Rear) ;
+    // 若头尾指向了同一处，则是空
 }
 
-// Push 默认第一个结点是栈顶,也就是头结点的Next的元素的顶部的元素
-bool Push(Stack S , ElementType x){
-    PtrToSNode tmp = (PtrToSNode)malloc(sizeof(struct SNode)) ;
-    tmp->Data = x ;
-    tmp->Next = S->Next ;
-    S->Next = tmp ;
+// 操作和删除
+bool AddQ(Queue Q , ElementType X){
+    Position tmp ;
+    tmp = (PtrToNode)malloc(sizeof(struct Node)) ;
+    tmp->Data = X ;
+    tmp->Next = NULL ;
+
+    if(Q->Front == NULL){
+        // 插入的是第一个结点
+        Q->Front = tmp ;
+        Q->Rear = tmp ;
+    }else{
+        // 非第一个结点
+        Q->Rear->Next = tmp ; //更新tmp的插入位置
+        Q->Rear = tmp ; // 尾指针指向tmp
+    }
+    Q->Size++;
+
+    printf("成功加入 %d , 当前size为%d \n" , Q->Rear->Data , Q->Size);
+
 
     return TRUE ;
 }
 
-// Pop
-ElementType Pop(Stack S){
-    PtrToSNode FirstCell ;
-    ElementType TopEle ;
-
-    if(isEmpty(S)){
-        printf("栈为空,POP失败");
+ElementType DeleteQ(Queue Q){
+    // 首先判断空
+    if(isEmpty(Q)) {
+        printf("空队列，出队失败 \n") ;
         return ERROR ;
     }else{
-        // 得到数值
-        FirstCell = S->Next ;
-        TopEle = FirstCell->Data ;
 
-        // 处理栈
-        S->Next = FirstCell->Next ; //将S的Next指向原本First的下一个元素即可
-        free(FirstCell );//释放空间
+        // 先获取对应元素
 
-        return TopEle ;
+        Position frontP = Q->Front->Next ; //要得到Front的Next结点才对，相当于顺序表里面先进行++
+        ElementType ElementP = frontP ->Data ;
+
+        if( frontP == Q->Rear){
+            // 最后一个元素出队，直接将队列归0
+            Q->Rear = Q->Front ;
+        }else{
+            Q->Front->Next = frontP->Next ; //头指针指向的Next重定义为原本P的下一个元素，达到删除P的目的
+        }
+
+
+        // 执行操作
+
+
+        // 进行释放操作与size修改
+        Q->Size-- ;
+
+        free(frontP) ;
+
+        printf("完成出队 %d，当前size为 %d \n" ,ElementP, Q->Size) ;
+
+
+
+        return ElementP ;
     }
 }
 
 // 测试函数
 int main(){
-    Stack S = InitStack() ;
-    printf("进行01234插入操作\n");
+    printf("\n生成表格\n");
+    Queue Q = CreateQueue() ; //最大为5
+    printf("\n加入五个元素\n");
     int k = 0 ;
-    for(k = 0 ; k < 5 ; k++){
-        Push(S,k) ;
+    for(k = 1 ; k <= 5 ;k++){
+        AddQ(Q,k) ;
     }
+    printf("出队两个元素\n");
+    int tmp =0 ;
+    tmp = DeleteQ(Q) ;
+    printf("出队： %d \n" , tmp) ;
+    tmp = DeleteQ(Q) ;
+    printf("出队： %d \n" , tmp) ;
+    printf("\n加入两个元素\n");
+    AddQ(Q,77) ;AddQ(Q,88) ;
+    printf("\n尝试再加入一个元素\n");
+    AddQ(Q,99);
 
-    printf("进行Push六次\n");
-    for(k = 0 ; k < 6 ; k++){
-        int tmp = Pop(S) ;
-        if(tmp == -1){
-            printf("取出失败");
-        }else{
-            printf("此次取出： %d \n" , tmp);
-        }
+    printf("按顺序进行出队直到队列空\n");
+    while(Q->Size > 0){
+        tmp = DeleteQ(Q) ;
+        printf("出队： %d \n" , tmp) ;
     }
-
     return 0 ;
 }
