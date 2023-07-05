@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,19 +9,7 @@
 #define TRUE 1   ;
 #define ERROR -1 ;
 
-typedef struct TreeNode *BinTree;
-typedef BinTree Postion ;
-
-typedef int Element;
-
-struct TreeNode
-{
-    Element Data;
-    BinTree Left ;
-    BinTree Right ;
-};
-
-typedef BinTree ElementType ;
+typedef int ElementType ;
 typedef int bool ;
 
 typedef struct Node * PtrToNode ;
@@ -112,7 +101,15 @@ ElementType DeleteQ(Queue Q){
     }
 }
 //================
+typedef struct TreeNode *BinTree;
+typedef BinTree Postion ;
 
+struct TreeNode
+{
+    ElementType Data;
+    BinTree Left ;
+    BinTree Right ;
+};
 
 
 // 中序遍历
@@ -147,26 +144,5 @@ void InorderTraversal_Back(BinTree BT){
 
 // 层序遍历
 void LevelTraversal(BinTree BT){
-    Queue Q ; // 利用队列
-    BinTree T ; //存储从队列头得到的元素
-    if(!BT) return ;
 
-    Q = CreateQueue();
-    AddQ(Q,BT);
-
-    while (!isEmpty(Q))
-    {
-        // 当Q存在元素
-        T =  DeleteQ(Q) ; //取出头
-        printf("%d " , T->Data) ;
-        if(T->Left) AddQ(Q,T->Left);
-        if(T->Right) AddQ(Q,T->Right);
-
-    }
-
-}
-
-int main(){
-
-    return 0 ;
 }
