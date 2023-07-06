@@ -1,123 +1,82 @@
-#include <stdio.h>
-#include <stdlib.h>
+# include <stdio.h>
+# include <stdlib.h>
 
-#define MaxVertexNum 100  //定义最大有100个顶点
-#define INFINITY 65535  //最大值，表示无限即两个点不相连
+#define FALSE 0
+#define TRUE 1
+#define ERROR -1
 
-typedef int Vertex ; // 顶点下标表示顶点
-typedef int WeightType ; // 权重
-typedef int DataType ;  // 存储的数据
+typedef int ElementType ;
+typedef int bool ;
 
-// 然后设计边
-typedef struct ENode * PtrToENode ;
 
-struct ENode{
-    Vertex V1,V2 ;
-    WeightType Weight ; /* 权重 */
-};
-typedef PtrToENode Edge ;
+#define MAXDATA 9999  //设定一个哨兵作为最大堆的顶点
+#define MINDATA -9999  //设定一个哨兵作为最大堆的顶点
 
-/* 邻接点定义 */
-typedef struct AdjVNode *PtrToAdjVNode ;
-struct AdjVNode{
-    Vertex AdjV ;
-    WeightType Weight ;
-    PtrToAdjVNode Next ;
-};
+void Swap(ElementType *a , ElementType *b){
+    ElementType t = *a ;
+    *a = *b ;
+    *b = t ;
+}
 
-// 顶点表头结点
-typedef struct Vnode{
-    PtrToAdjVNode FirstEdge ;
-    DataType Data ;
-} AdjList [MaxVertexNum] ;
+// 归并排序
 
-// 图结点
-typedef struct GNode *PtrToGNode ;
-struct GNode
-{
-    int Nv ; // 顶点
-    int Ne ; // 边数
-    AdjList G ; // 邻接表
-};
-typedef PtrToGNode LGraph ;
+// L左边起始位置  ， R 右边起始位置 ， End终点位置（右侧
+void Merge(ElementType A[] , ElementType TmpA[] , int L ,int R ,int End){
+    // 将有序的A[L] -> A[R-1]和 A[R]->A[End] 归并为一个有序序列
+    int leftEnd , NumElements , Tmp ;
+    int i ;
 
-//初始化
-LGraph CreateGraph(int length){
-    Vertex V ;
-    LGraph Graph ;
+    leftEnd = R-1 ; //左侧终点
+    Tmp = L ;  // 起始位置
 
-    Graph = (LGraph)malloc(sizeof(struct GNode)) ;
-    Graph->Nv = length ;
-    Graph->Ne = 0  ;
+    NumElements = End-L+1 ; //计算数组总数
 
-    //初始化邻接表表头指针
-    for(V=0 ; V<Graph->Nv ; V++){
-        Graph->G[V].FirstEdge = NULL ; //
+    // 归并
+    while(L <= leftEnd && R <= End){
+        if(A[L] <= A[R])    TmpA[Tmp++] = A[L++] ;
+        else                TmpA[Tmp++] = A[R++] ;
     }
 
-    return Graph ;
-}
+    // 对于剩下的进行处理
+    while(L <= leftEnd) TmpA[Tmp++] = A[L++] ;
+    while(R <= End)     TmpA[Tmp++] = A[R++] ;
 
-void InsertEdge(LGraph Graph , Edge E){
-    // 插入边<V1,V2>
-
-    PtrToAdjVNode NewNode ; //建立新结点
-    // 初始化新结点 , 为V2建立新的邻接点
-    NewNode = (PtrToAdjVNode)malloc(sizeof(struct AdjVNode)) ;
-    NewNode ->AdjV = E->V2 ;
-    NewNode ->Weight = E->Weight;
-
-    // 将V2插入V1的表头
-    NewNode->Next = Graph->G[E->V1].FirstEdge ;
-    Graph->G[E->V1].FirstEdge = NewNode ;
-
-    // 如果是无向图，还要顺带插入<V2,V1>
-    NewNode = (PtrToAdjVNode)malloc(sizeof(struct AdjVNode)) ;
-    NewNode ->AdjV = E->V1 ;
-    NewNode ->Weight = E->Weight;
-    // 将V1插入V2的表头
-    NewNode->Next = Graph->G[E->V2].FirstEdge ;
-    Graph->G[E->V2].FirstEdge = NewNode ;
-}
-
-LGraph BuildGraph(){
-    LGraph Graph ;
-    Edge E ;
-    Vertex V ;
-    int Nv,i ;
-
-    scanf("%d" , &Nv) ; // 读入顶点数
-    Graph = CreateGraph(Nv);
-
-    scanf("%d",&(Graph->Nv)) ; //边数
-    if(Graph->Ne != 0){
-        // 读边
-        E = (Edge)malloc(sizeof(struct ENode)) ;
-
-        for(i=0;i<Graph->Ne;i++){
-            scanf("%d %d %d",&E->V1 , &E->V2,&E->Weight) ;
-
-            InsertEdge(Graph,E) ;
-        }
+    for(i=0 ; i<NumElements ; i++,End--){
+        // 复制回原数组
+        A[End] = TmpA[End] ;
     }
-
-    //如果有读入数据的要求的话，还需读入数据
-    for(V=0;V<Graph->Nv;V++)    scanf("%d",&(Graph->G[V].Data)) ;
-
-    return Graph ;
 }
 
-//深度优先搜索
-void Visit(Vertex V){
-    printf(" 访问顶点： %d \n",V);
+// 归并函数的核心递归排序
+void M_Sort(ElementType A [] , ElementType TmpA[] , int L ,int End){
+    int Center ;
+
+    if(L < End){
+        Center = (L+End) / 2 ;
+        M_Sort(A,TmpA,L,Center); // 递归解决左边
+        M_Sort(A,TmpA,Center+1,End);// 递归解决右边
+
+        // 进行合并操作
+        Merge(A,TmpA,L,Center,End); //这里是Merge
+    }
 }
 
-void DFS(LGraph Graph , Vertex V , void(*Visit)(Vertex)){
+// 统一调用函数
+void MergeSort(ElementType A[] , int N){
+    ElementType *TmpA ;
+    // 生成临时数组
+    TmpA = (ElementType *)malloc(N * sizeof(ElementType));
 
+    if(TmpA != NULL ){
+        M_Sort(A,TmpA,0,N-1);
+        // 调用结束记得释放空间
+        free(TmpA );
+    }else{
+        printf("空间不足，失败 \n") ;
+    }
 }
 
 int main(){
 
-
-    return 0 ;
+    return 0  ;
 }

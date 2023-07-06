@@ -1,159 +1,25 @@
 # include <stdio.h>
 # include <stdlib.h>
 
-#define FALSE 0;
-#define TRUE 1   ;
-#define ERROR -1 ;
+#define FALSE 0
+#define TRUE 1   
+#define ERROR -1 
 
 typedef int ElementType ;
 typedef int bool ;
 
 
-#define MAXDATA 9999 ; //设定一个哨兵作为最大堆的顶点   
-#define MINDATA -9999 ; //设定一个哨兵作为最大堆的顶点   
+#define MAXDATA 9999  //设定一个哨兵作为最大堆的顶点   
+#define MINDATA -9999  //设定一个哨兵作为最大堆的顶点   
 
-// 建立堆   
-typedef struct HNode* Heap ; 
-struct HNode{
-    ElementType *Data ;  // 数组
-    int Size ;  // 当前元素个数
-    int Capacity ;  // 最大容量    
-};
-
-
-typedef Heap MaxHeap ; 
-typedef Heap MinHeap ; 
-
-// 最大堆的建立 
-MaxHeap CreateHeap(int MaxSize)
-{
-    // 申请空间
-    MaxHeap H = (MaxHeap)malloc(sizeof(struct HNode)) ; 
-    H->Data = (ElementType*)malloc((MaxSize+1) * sizeof(ElementType)) ; 
-    // 这里使用MaxSize+1是因为下标为0的区域要存放哨兵   
-    H->Size = 0 ; 
-    H->Capacity = MaxSize ; 
-    H->Data[0] = MAXDATA ; //设置哨兵，这里是最大堆的哨兵
-    // H->Data[0] = MINDATA
-
-    return H ; 
-}
-
-// 最大堆的插入 
-bool IsFull(MaxHeap H){
-    return (H->Size == H->Capacity) ; 
-}
-
-// 插入操作 
-bool Insert(MaxHeap H , ElementType X){
-    int i ; 
-
-    if(IsFull(H)){
-        // 如果最大堆已满，插入失败
-        printf("堆满 \n") ; 
-        return FALSE ; 
-    }
-
-    i = ++H->Size ; 
-    /*
-    H->Size++;
-    i = H->Size ; 
-    */
-    // i指向下一位位置
-
-    // 进行调整
-    for(   ; H->Data[i/2] < X ; i/=2)
-        H->Data[i] = H->Data[i/2] ; // 将父节点的位置赋给当前位置，实质上就是在不断上移
-        // H->Data[i/2] < X 根节点小于插入元素时，一直向上寻找（即i/2）
-        // 直到找到“根节点大于插入点”，此时跳出
-    
-    // 跳出后进行X的重赋值操作  
-    H->Data[i] = X ; //此时找到了合适的位置插入
-
-
-    return TRUE ;
+void Swap(ElementType *a , ElementType *b){
+    ElementType t = *a ; 
+    *a = *b ; 
+    *b = t ; 
 }
 
 
-// 删除 
-#define ERROR -1 ; 
-bool IsEmpty(MaxHeap H){
-    return (H->Size == 0) ; 
-}
+int main(){
 
-ElementType DeleteMax(MaxHeap H){
-    // 基础定义 
-    int Parent , Child ; 
-    ElementType  MaxItem , X ; 
-
-    if(IsEmpty(H)){
-        printf("空堆\n") ; 
-        return ERROR ; 
-    }
-
-    // 主要算法 
-    MaxItem = H->Data[1] ; //取出最大值，这个是我们要返回的东西 
-
-    // 用最大堆的最后一个元素从根结点开始向上过滤下层结点   
-    X = H->Data[H->Size--] ;  // X是最后一个元素的大小
-    // 先到达H->Size , 然后Size--来更新规模 
-
-    // 进行过滤 
-    for(Parent = 1 ; Parent*2 <= H->Size ; Parent = Child){
-        //从1开始，对每一个父结点（都是2的倍数）进行遍历
-        // Parent 指示了将来要换的位置
-        // 关于 Parent = Child的操作见跳出循环时
-
-        Child = Parent * 2 ;// 得到Child 
-        // 进行判断 ，要从Child里面选出一个较大的
-        if((Child != H->Size) && (H->Data[Child] < H->Data[Child+1])){
-            Child++ ;//右结点
-            // 这里的判断基于两个部分 1.不断超过大小（Szie) 2.不符合要求，即它是比较小的点
-        }
-
-        // 找到合适位置时   
-        if(X>=H->Data[Child]) break;  // 位置合适。X比左右儿子都大，break
-        else {
-            H->Data[Parent] = H->Data[Child] ; //向下过滤。即把左右儿子中大这设置为Parent，然后继续执行
-        }
-    }
-
-    // 跳出循环时，会执行Parent = Child
-    H->Data[Parent] = X ; 
-    // 配合Parent = Child相当于执行了正确的位置替换 
-
-    return MaxItem ; 
-}
-
-
-// 建立最大堆
-void PercDown(MaxHeap H , int p){
-    // 下滤：将H中以H->DATA[p] 为根的子堆调整为最大堆   
-    int Parent , Child ; 
-    ElementType X ; 
-
-    X=H->Data[p] ; //取出根结点存放的值 
-    // 下面操作和删除的下滤类似 
-
-    for(Parent = p ; Parent *2 <= H->Size ; Parent = Child){
-        Child = Parent*2 ; 
-        if((Child!=H->Size) && (H->Data[Child] < H->Data[Child+1])){
-            Child++ ; 
-        }
-
-        if(X >= H->Data[Child]) break; 
-        else H->Data[Parent] = H->Data[Child] ; 
-    }
-
-    H->Data[Parent] = X ; 
-}
-
-void BuildHeap(MaxHeap H){
-    // 调整在 H->Data[] 中的元素，使其满足最大堆的有序性    
-
-    int i ; 
-    for(i = H->Size/2 ; i>0;i--){
-        // 从下往上进行调整
-        PercDown(H , i)  ;
-    }
+    return 0  ;
 }
