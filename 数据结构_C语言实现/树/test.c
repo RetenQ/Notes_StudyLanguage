@@ -6,131 +6,133 @@
 #define TRUE 1 
 #define FALSE 0 
 
+typedef int ElementType ;
 typedef int bool ;
 typedef int Vertex ; // 顶点下标表示顶点    
 typedef int WeightType ; // 权重    
 typedef int DataType ;  // 存储的数据    
 
-// 然后设计边   
-typedef struct ENode * PtrToENode ; 
+// AVL树的基础类型  
+typedef struct AVLNode * Position; 
+typedef Position AVLTree ; 
 
-struct ENode{
-    Vertex V1,V2 ; 
-    WeightType Weight ; /* 权重 */  
-};
-typedef PtrToENode Edge ; 
+typedef struct AVLNode{
+    ElementType Data ;
+    AVLTree Left  ;
+    AVLTree Right ; 
 
-/* 邻接点定义 */    
-typedef struct AdjVNode *PtrToAdjVNode ; 
-struct AdjVNode{
-    Vertex AdjV ;
-    WeightType Weight ;
-    PtrToAdjVNode Next ;
+    int Height ; 
 };
 
-// 顶点表头结点 
-typedef struct Vnode{
-    PtrToAdjVNode FirstEdge ;
-    DataType Data ;
-} AdjList [MaxVertexNum] ; 
-
-// 图结点   
-typedef struct GNode *PtrToGNode ; 
-struct GNode
-{
-    int Nv ; // 顶点
-    int Ne ; // 边数
-    AdjList G ; // 邻接表   
-};
-typedef PtrToGNode LGraph ; 
-
-//初始化
-LGraph CreateGraph(int length){
-    Vertex V ; 
-    LGraph Graph ; 
-
-    Graph = (LGraph)malloc(sizeof(struct GNode)) ; 
-    Graph->Nv = length ;
-    Graph->Ne = 0  ;
-
-    //初始化邻接表表头指针
-    for(V=0 ; V<Graph->Nv ; V++){
-        Graph->G[V].FirstEdge = NULL ; //
-    }
-
-    return Graph ; 
+int GetHeight(AVLTree T){
+    return T->Height  ;
 }
 
-void InsertEdge(LGraph Graph , Edge E){
-    // 插入边<V1,V2>
+int Max(int a , int b){
+    return a>b ? a:b ; 
+}
+
+// 左单旋算法   
+AVLTree SingLL(AVLTree A){
+    // 发生了LL不平衡
+    // 最终返回的是B    
+    /*
+        1.设置B，B是原本A的左子树   
+        2.将A的左子树更新设为B的右子树  
+        3.将A自身设置为B的左子树    
+    */
+    AVLTree B = A->Left ; 
+    A->Left = B->Right ; 
+    B->Right = A ; 
+
+    // 更新高度 
+    A->Height = Max(GetHeight(A->Left) , GetHeight(A->Right)) +1 ;
+    B->Height = Max(GetHeight(B->Left) , GetHeight(B->Right)) +1  ; 
+    //B->Height = Max(GetHeight(B->Left) , A->Height) +1  ; 
+
+    return B ; 
+}
+
+
+// 右单旋算法   
+AVLTree SingRR(AVLTree A){
+    // 和左单选类似，用于发生了RR不平衡的情况   
+    /*
+        1.设置B，B是A的右子树   
+        2.将A的右子树更新为B的左子树    
+        3.将A自身设置为B的左子树    
+    */
+    AVLTree B = B->Right ; 
+    A->Right = B->Left ; 
+    B->Left = A  ;
+
+    // 更新高度 
+    A->Height = Max(GetHeight(A->Left) , GetHeight(A->Right)) +1 ;
+    B->Height = Max(GetHeight(B->Left) , GetHeight(B->Right)) +1  ; 
+}
+
+// 左右双旋 
+// 适用于LR不平衡 
+// 注意，因为数据的问题，应该先对A的子树操作，再操作A。
+// 实质上是先对A的子树用了RR旋转，然后对A自己做LL旋转   
+
+AVLTree DoubleLR(AVLTree A){
+    // 对A的左子树做右旋    
+    // 然后对A自己做左旋    
+    A->Left = SingRR(A->Left) ; 
+    return SingLL(A) ;
+} 
+
+// 右左双旋 
+// 适用于RL不平衡   
+AVLTree DoubleRL(AVLTree A){
+    A->Right = SingLL(A->Right) ; 
+    return SingRR(A) ;
+}
+
+AVLTree Insert(AVLTree T , ElementType X){
+    // 插入空树的情况   
+    if(!T){
+        T = (AVLTree)malloc(sizeof(struct AVLNode)) ; 
+        T->Data = X ; 
+        T->Height = 1 ; 
+        T->Left = T->Right = NULL ; 
+    }
+
+    else if(X < T->Data){
+        // 插入左子树的情况 
+        T->Left = Insert(T->Left , X);
+        // 此时只可能发生左旋的情况或者LR情况   
+        if(GetHeight(T->Left) - GetHeight(T->Right) == 2){
+            // 大于2的插值就是发生不平衡了
+            // 下面通过插入位置来判断是哪种不平衡   
+            if(X < T->Left ->Data){
+                T = SingLL(T) ; //插在左边
+            }else{
+                T = DoubleLR(T) ; 
+            }
+        }
+    }
+    else if(X > T->Data){
+        // 插在右子树的情况 
+        T->Right = Insert(T->Right , X) ; 
+        // 如果需要右旋 
+        if(GetHeight(T->Left) - GetHeight(T->Right) == -2){
+            // 同上文的判断方式 
+            if(X > T->Right->Data){
+                T = SingRR(T);
+            }else{
+                T= DoubleRL(T);
+            }
+        }
+    }
+
+        // 更新树高度   
+    T->Height = Max(GetHeight(T->Left) ,GetHeight(T->Right)) + 1 ; 
     
-    PtrToAdjVNode NewNode ; //建立新结点  
-    // 初始化新结点 , 为V2建立新的邻接点    
-    NewNode = (PtrToAdjVNode)malloc(sizeof(struct AdjVNode)) ; 
-    NewNode ->AdjV = E->V2 ; 
-    NewNode ->Weight = E->Weight; 
-
-    // 将V2插入V1的表头 
-    NewNode->Next = Graph->G[E->V1].FirstEdge ; 
-    Graph->G[E->V1].FirstEdge = NewNode ; 
-
-    // 如果是无向图，还要顺带插入<V2,V1>
-    NewNode = (PtrToAdjVNode)malloc(sizeof(struct AdjVNode)) ; 
-    NewNode ->AdjV = E->V1 ; 
-    NewNode ->Weight = E->Weight; 
-    // 将V1插入V2的表头 
-    NewNode->Next = Graph->G[E->V2].FirstEdge ; 
-    Graph->G[E->V2].FirstEdge = NewNode ; 
+    return T ; 
 }
 
-LGraph BuildGraph(){
-    LGraph Graph ; 
-    Edge E ; 
-    Vertex V ; 
-    int Nv,i ; 
-
-    scanf("%d" , &Nv) ; // 读入顶点数   
-    Graph = CreateGraph(Nv);
-
-    scanf("%d",&(Graph->Nv)) ; //边数   
-    if(Graph->Ne != 0){
-        // 读边
-        E = (Edge)malloc(sizeof(struct ENode)) ; 
-
-        for(i=0;i<Graph->Ne;i++){
-            scanf("%d %d %d",&E->V1 , &E->V2,&E->Weight) ;
-
-            InsertEdge(Graph,E) ; 
-        }
-    }
-
-    //如果有读入数据的要求的话，还需读入数据    
-    for(V=0;V<Graph->Nv;V++)    scanf("%d",&(Graph->G[V].Data)) ; 
-
-    return Graph ; 
-}
-
-//深度优先搜索  
-void Visit(Vertex V){
-    printf(" 访问顶点： %d \n",V);
-}
-
-// 搜索
-int Visited [100] ; //标记数组  
-
-// dfs
-void DFS(LGraph Graph , Vertex V , void(*Visit)(Vertex)){
-    // 从V出发对Graph进行搜索   
-    PtrToAdjVNode w ; 
-
-    Visit(V) ; Visited[V] = TRUE ; 
-
-    for(w = Graph->G[V].FirstEdge ; w ;w=w->Next){
-        if(!Visited[w->AdjV]){
-            DFS(Graph,w->AdjV,Visit);
-        }
-    }
-}
 
 int main(){
 
