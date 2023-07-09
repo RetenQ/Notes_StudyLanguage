@@ -1,152 +1,149 @@
-# include <stdio.h>
-# include <stdlib.h>
-# include <math.h>
-# include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#define FALSE 0
+#define MaxVertexNum 100  //定义最大有100个顶点
+#define INFINITY 65535  //最大值，表示无限即两个点不相连
 #define TRUE 1
-#define ERROR -1
+#define FALSE 0
 
-// typedef int ElementType ;
-typedef int bool ;
+typedef int Vertex ; // 顶点下标表示顶点
+typedef int WeightType ; // 权重
+typedef int DataType ;  // 存储的数据
 
+// 然后设计边
+typedef struct ENode * PtrToENode ;
 
-#define MAXDATA 9999  //设定一个哨兵作为最大堆的顶点
-#define MINDATA -9999  //设定一个哨兵作为最大堆的顶点
+struct ENode{
+    Vertex V1,V2 ;
+    WeightType Weight ; /* 权重 */
+};
+typedef PtrToENode Edge ;
 
-// 开放地址法
+/* 邻接点定义 */
+typedef struct AdjVNode *PtrToAdjVNode ;
+struct AdjVNode{
+    Vertex AdjV ;
+    WeightType Weight ;
+    PtrToAdjVNode Next ;
+};
 
-// 分离链接
-#define MAXTABLESIZE 100000
+// 顶点表头结点
+typedef struct Vnode{
+    PtrToAdjVNode FirstEdge ;
+    DataType Data ;
+} AdjList [MaxVertexNum] ;
 
-// 辅助函数，用于得到一个可用的素数
-int NextPrime(int N){
-    // 返回大于N且不超过MAXTABLESIZE的最小素数
-    int i , p = (N%2) ? N+2 : N+1 ; //从奇数开始
-
-    while (p <= MAXTABLESIZE)
-    {
-        for(i = (int)sqrt(p) ;  i > 2 ; i--){
-            if(!(p%i))  break;  // p不是素数
-        }
-        if(i==2) break; // for正常结束，说明p是素数
-        else p+=2 ;
-    }
-    return p ;
-}
-
-// 位移映射函数
-int Hash(const char *Key , int TableSize){
-    unsigned int H = 0 ;
-    while(*Key != '\0') {
-        H = (H<<5) + *Key++ ;
-    }
-
-    return H%TableSize ;
-}
-
-// 结构声明
-#define KEYLENGTH 15
-typedef char ElementType[KEYLENGTH+1] ;  // 使用字符串当关键字
-typedef int Index ;
-
-typedef struct LNode * PtrToLNode ;
-struct LNode
+// 图结点
+typedef struct GNode *PtrToGNode ;
+struct GNode
 {
-    ElementType Data ;
-    PtrToLNode Next ;
+    int Nv ; // 顶点
+    int Ne ; // 边数
+    AdjList G ; // 邻接表
 };
+typedef PtrToGNode LGraph ;
 
-typedef PtrToLNode Position ;
-typedef PtrToLNode List ;
+//初始化
+LGraph CreateGraph(int length){
+    Vertex V ;
+    LGraph Graph ;
 
-typedef struct TBLNode * HashTable ;
-struct TBLNode{
-    int TableSize ;
-    List Heads ;
-};
+    Graph = (LGraph)malloc(sizeof(struct GNode)) ;
+    Graph->Nv = length ; // 顶点数
+    Graph->Ne = 0  ;
 
-HashTable CreateTable(int TabelSize){
-    HashTable H ;
-    int i ;
-
-    // 初始化表
-    H = (HashTable)malloc(sizeof(struct TBLNode)) ;
-    H->TableSize = NextPrime(TabelSize) ;
-
-    // 分配表头
-    H->Heads = (List)malloc(H->TableSize * sizeof(struct LNode)) ;
-
-    for(i = 0 ; i < H->TableSize ; i++){
-        H->Heads[i].Data[0] = '\0' ;
-        H->Heads[i].Next = NULL ;
+    //初始化邻接表表头指针
+    for(V=0 ; V<Graph->Nv ; V++){
+        Graph->G[V].FirstEdge = NULL ; //
     }
 
-    return H ;
+    return Graph ;
 }
 
-// 查找
-Position Find(HashTable H , ElementType Key){
-    Position P ;
-    Index Pos ;
+void InsertEdge(LGraph Graph , Edge E){
+    // 插入边<V1,V2>
 
-    Pos = Hash(Key , H->TableSize) ;
-    P = H->Heads[Pos].Next ;
+    PtrToAdjVNode NewNode ; //建立新结点
+    // 初始化新结点 , 为V2建立新的邻接点
+    NewNode = (PtrToAdjVNode)malloc(sizeof(struct AdjVNode)) ;
+    NewNode ->AdjV = E->V2 ;
+    NewNode ->Weight = E->Weight;
 
-    // 开始逐个寻找
-    while (P && strcmp(P->Data , Key))
-    {
-        P = P->Next ; // 不断前移
-    }
+    // 将V2插入V1的表头
+    NewNode->Next = Graph->G[E->V1].FirstEdge ;
+    Graph->G[E->V1].FirstEdge = NewNode ;
 
-    // 找到之后跳出，或者没找到跳出（没找到时返回NULL）
-    return P ;
+    // 如果是无向图，还要顺带插入<V2,V1>
+    NewNode = (PtrToAdjVNode)malloc(sizeof(struct AdjVNode)) ;
+    NewNode ->AdjV = E->V1 ;
+    NewNode ->Weight = E->Weight;
+    // 将V1插入V2的表头
+    NewNode->Next = Graph->G[E->V2].FirstEdge ;
+    Graph->G[E->V2].FirstEdge = NewNode ;
+
+    // Graph->Ne的数值这里在BuildGraph中进行了指定
 }
 
-// 插入
-bool Insert(HashTable H , ElementType Key){
-    Position P , NewCell ;
-    Index Pos ;
+LGraph BuildGraph(){
+    LGraph Graph ;
+    Edge E ;
+    Vertex V ;
+    int Nv,i ;
+    printf("读入顶点数\n");
+    scanf("%d" , &Nv) ;
+    printf("读入顶点数成功\n");
 
-    P = Find(H,Key) ;
-    if(!P){
-        // 关键词未找到,则可以插入
-        NewCell = (Position)malloc(sizeof(struct LNode));
-        strcpy(NewCell->Data , Key) ; // 将关键词写入
+    Graph = CreateGraph(Nv);
+    printf("创建图成功\n");
 
-        Pos = Hash(Key,H->TableSize); // 初始散列位置
+    printf("\n读入边数 \n");
+    scanf("%d",&(Graph->Ne)) ; //边数
 
-        // 将NewCell插入为H->Heads[Pos]链表的第一个结点
-        NewCell ->Next = H->Heads[Pos].Next ;
-        H ->Heads[Pos].Next = NewCell ;
-        return TRUE ;
-    }else{
-        // 关键词存在
-        printf("关键词已存在 \n") ;
-        return FALSE ;
-    }
-}
+    printf("读入边成功 \n === \n 边：%d 顶点: %d  \n" ,Graph->Nv , Graph->Ne);
+    if(Graph->Ne != 0){
+        // 读边
+        E = (Edge)malloc(sizeof(struct ENode)) ;
 
-// 释放散列表
-void DestoryTable(HashTable H){
-    int i ;
-    Position P,Tmp ;
+        for(i=0;i<Graph->Ne;i++){
+            scanf("%d %d %d",&E->V1 , &E->V2,&E->Weight) ;
 
-    // 释放每一个结点
-    for(i=0 ; i <H ->TableSize ;i++){
-        P= H->Heads[i].Next ;
-        while(P){
-            Tmp = P->Next ;
-            free(P) ;
-            P = Tmp ;
+            printf("读入 ： %d 到 %d , 权重 %d \n",E->V1,E->V2,E->Weight);
+
+            InsertEdge(Graph,E) ;
         }
     }
 
-    free(H->Heads);
-    free(H);
+    //如果有读入数据的要求的话，还需读入数据
+    // for(V=0;V<Graph->Nv;V++)    scanf("%d",&(Graph->G[V].Data)) ;
+
+    return Graph ;
+}
+
+// 遍历
+void Visit(Vertex V){
+    printf("正在访问顶点 %d \n" , V) ;
+}
+
+void DFS(LGraph Graph , Vertex V ,int* Visited ,  void(*Visit)(Vertex)){
+    // 以V为出发s点进行DFS
+    PtrToAdjVNode W ;
+    Visit(V) ;
+    Visited[V] = TRUE ;
+
+    for(W = Graph->G[V].FirstEdge ; W ; W=W->Next){
+        if(!Visited[W->AdjV]){
+            DFS(Graph , W->AdjV,Visited , Visit) ;
+        }
+    }
 }
 
 int main(){
+    LGraph g ;
+    g = BuildGraph() ;
+    int Visited [999] ;
+    int i ;
+    for(i =0 ; i < 999 ; i++)   Visited[i] = 0 ;
+    DFS(g , 0 ,Visited, Visit);
 
-    return 0  ;
+    return 0 ;
 }
