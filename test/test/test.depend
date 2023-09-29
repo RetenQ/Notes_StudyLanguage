@@ -1,5 +1,6 @@
 # depslib dependency file v1.0
-1688909537 source:k:\githubrepositories\notes_studylanguage\test\test\main.c
+1689087495 source:k:\githubrepositories\notes_studylanguage\test\test\main.c
 	<stdio.h>
+	<math.h>
 	<stdlib.h>
 
